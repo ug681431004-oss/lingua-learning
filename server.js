@@ -294,8 +294,12 @@ initDatabase();
 // ============================================
 app.get('/admin/data', async (req, res) => {
     try {
-        // Check if user is logged in as admin
-        const token = req.headers.authorization?.split(' ')[1];
+        // Check token from header OR query parameter (for direct link access)
+        let token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            token = req.query.token;
+        }
+        
         if (!token) {
             return res.send(`
                 <html>
@@ -352,7 +356,7 @@ app.get('/admin/data', async (req, res) => {
             <div class="container">
                 <h1>📊 Data Viewer</h1>
                 <a href="/" class="back-btn">🏠 Back to Home</a>
-                <a href="/admin/data?refresh=1" class="back-btn" style="background: #2196F3;">🔄 Refresh</a>
+                <a href="/admin/data?token=${token}" class="back-btn" style="background: #2196F3;">🔄 Refresh</a>
                 <hr>
         `;
 
