@@ -32,11 +32,13 @@ app.use(cors());
 app.use(express.json());
 
 // ============================================
-// CREATE TABLES IN CORRECT ORDER
+// CREATE TABLES IN CORRECT ORDER - FIXED
 // ============================================
 async function initDatabase() {
     try {
-        // 1. Create USERS table FIRST (most important)
+        console.log('🔄 Creating database tables...');
+
+        // 1. Create USERS table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -94,7 +96,7 @@ async function initDatabase() {
         `);
         console.log('✅ Course setup table created');
 
-        // 5. Create PROGRESS_DATA table (depends on users + course_setup)
+        // 5. Create PROGRESS_DATA table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS progress_data (
                 progress_id SERIAL PRIMARY KEY,
@@ -223,42 +225,52 @@ async function initDatabase() {
         console.log('✅ Learn request table created');
 
         // ============================================
-        // INSERT DEFAULT DATA
+        // INSERT DEFAULT DATA (Check first)
         // ============================================
 
         // Insert roles
-        await pool.query(`
-            INSERT INTO role (role_type, access_level) VALUES 
-                ('admin', 3),
-                ('teacher', 2),
-                ('student', 1)
-            ON CONFLICT (role_type) DO NOTHING;
-        `);
-        console.log('✅ Roles inserted');
+        const roleCheck = await pool.query('SELECT * FROM role WHERE role_type = $1', ['admin']);
+        if (roleCheck.rows.length === 0) {
+            await pool.query(`
+                INSERT INTO role (role_type, access_level) VALUES 
+                    ('admin', 3),
+                    ('teacher', 2),
+                    ('student', 1);
+            `);
+            console.log('✅ Roles inserted');
+        }
 
         // Insert default course
-        await pool.query(`
-            INSERT INTO course_setup (course_id, course_name, language, schedule) 
-            VALUES (1, 'General Vocabulary', 'Multilingual', 'Self-paced')
-            ON CONFLICT (course_id) DO NOTHING;
-        `);
-        console.log('✅ Default course inserted');
+        const courseCheck = await pool.query('SELECT * FROM course_setup WHERE course_id = 1');
+        if (courseCheck.rows.length === 0) {
+            await pool.query(`
+                INSERT INTO course_setup (course_id, course_name, language, schedule) 
+                VALUES (1, 'General Vocabulary', 'Multilingual', 'Self-paced');
+            `);
+            console.log('✅ Default course inserted');
+        }
 
         // Insert admin user (password: admin123)
-        await pool.query(`
-            INSERT INTO users (username, password_hash, email, full_name, status) 
-            VALUES ('admin', '$2a$10$CpFPl8mza/G9RP6.t6w7Fe92IHgojczAhAlNfpzHjGevMUdWZruYa', 'admin@system.com', 'System Admin', 'active')
-            ON CONFLICT (username) DO NOTHING;
-        `);
-        console.log('✅ Admin user inserted');
+        const adminCheck = await pool.query('SELECT * FROM users WHERE username = $1', ['admin']);
+        if (adminCheck.rows.length === 0) {
+            await pool.query(`
+                INSERT INTO users (username, password_hash, email, full_name, status) 
+                VALUES ('admin', '$2a$10$CpFPl8mza/G9RP6.t6w7Fe92IHgojczAhAlNfpzHjGevMUdWZruYa', 'admin@system.com', 'System Admin', 'active');
+            `);
+            console.log('✅ Admin user inserted');
+        }
 
         // Insert admin stats
-        await pool.query(`
-            INSERT INTO user_stats (user_id) 
-            SELECT id FROM users WHERE username = 'admin'
-            ON CONFLICT (user_id) DO NOTHING;
+        const statsCheck = await pool.query(`
+            SELECT * FROM user_stats WHERE user_id = (SELECT id FROM users WHERE username = 'admin')
         `);
-        console.log('✅ Admin stats inserted');
+        if (statsCheck.rows.length === 0) {
+            await pool.query(`
+                INSERT INTO user_stats (user_id) 
+                SELECT id FROM users WHERE username = 'admin';
+            `);
+            console.log('✅ Admin stats inserted');
+        }
 
         console.log('✅ All tables and default data created successfully!');
 
