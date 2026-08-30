@@ -131,7 +131,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('navUser').style.display = 'block';
     document.getElementById('navUsername').textContent = '👤 ' + currentUser.username;
     document.getElementById('navUsername').style.color = 'var(--gold-bright)';
-    showDashboard();
+    
+    // Redirect based on user role
+    if (currentUser.username === 'admin') {
+      showAdminDashboard();
+    } else {
+      showUserDashboard();
+    }
   }
 });
 
@@ -246,31 +252,43 @@ if (dictSearch) {
 buildDictionary();
 
 // ============================================================================
-// SHOW DASHBOARD
+// SHOW USER DASHBOARD (Regular Users)
 // ============================================================================
-function showDashboard() {
-  const dash = document.getElementById('dashboard');
-  const learn = document.getElementById('learn');
-  const dict = document.getElementById('dictionary');
-  const dashUser = document.getElementById('dashUsername');
-  
-  if (dash) dash.style.display = 'block';
-  if (learn) learn.style.display = 'none';
-  if (dict) dict.style.display = 'block';
-  if (dashUser) dashUser.textContent = currentUser ? currentUser.username : 'User';
-  
-  loadDashboardStats();
+function showUserDashboard() {
+  document.getElementById('userDashboard').style.display = 'block';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('learn').style.display = 'none';
+  document.getElementById('dictionary').style.display = 'block';
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('navUser').style.display = 'block';
+  document.getElementById('navUsername').textContent = '👤 ' + currentUser.username;
+  document.getElementById('navUsername').style.color = 'var(--gold-bright)';
+  document.getElementById('dashUsername').textContent = currentUser.username;
+  loadUserStats();
   loadLessons();
 }
 
+// ============================================================================
+// SHOW ADMIN DASHBOARD (Admin Only)
+// ============================================================================
+function showAdminDashboard() {
+  document.getElementById('adminDashboard').style.display = 'block';
+  document.getElementById('userDashboard').style.display = 'none';
+  document.getElementById('learn').style.display = 'none';
+  document.getElementById('dictionary').style.display = 'block';
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('navUser').style.display = 'block';
+  document.getElementById('navUsername').textContent = '👤 ' + currentUser.username + ' (Admin)';
+  document.getElementById('navUsername').style.color = 'var(--gold-bright)';
+  document.getElementById('adminName').textContent = currentUser.username;
+  loadAdminStats();
+}
+
 function showLearn() {
-  const dash = document.getElementById('dashboard');
-  const learn = document.getElementById('learn');
-  const dict = document.getElementById('dictionary');
-  
-  if (dash) dash.style.display = 'none';
-  if (learn) learn.style.display = 'block';
-  if (dict) dict.style.display = 'none';
+  document.getElementById('learn').style.display = 'block';
+  document.getElementById('userDashboard').style.display = 'none';
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('dictionary').style.display = 'none';
 }
 
 // ============================================================================
@@ -362,49 +380,32 @@ function renderQuestion() {
   const q = gameState.questions[gameState.currentQuestion];
   if (!q) return;
   
-  const heartsEl = document.getElementById('hearts');
-  const xpEl = document.getElementById('xp');
-  const streakEl = document.getElementById('streak');
-  const levelEl = document.getElementById('level');
-  
-  if (heartsEl) heartsEl.textContent = gameState.hearts;
-  if (xpEl) xpEl.textContent = gameState.xp;
-  if (streakEl) streakEl.textContent = gameState.streak;
-  if (levelEl) levelEl.textContent = 'Level ' + gameState.level;
+  document.getElementById('hearts').textContent = gameState.hearts;
+  document.getElementById('xp').textContent = gameState.xp;
+  document.getElementById('streak').textContent = gameState.streak;
+  document.getElementById('level').textContent = 'Level ' + gameState.level;
   
   const progress = ((gameState.currentQuestion) / gameState.totalQuestions) * 100;
-  const progressBar = document.getElementById('lessonProgress');
-  if (progressBar) progressBar.style.width = progress + '%';
+  document.getElementById('lessonProgress').style.width = progress + '%';
   
-  const qNum = document.getElementById('questionNumber');
-  const qCat = document.getElementById('questionCategory');
-  const qText = document.getElementById('questionText');
-  const qWord = document.getElementById('questionWord');
-  
-  if (qNum) qNum.textContent = `${gameState.currentQuestion + 1} / ${gameState.totalQuestions}`;
-  if (qCat) qCat.textContent = CATEGORIES[gameState.currentLesson].name;
-  if (qText) qText.textContent = q.questionText;
-  if (qWord) qWord.textContent = q.word.en;
+  document.getElementById('questionNumber').textContent = `${gameState.currentQuestion + 1} / ${gameState.totalQuestions}`;
+  document.getElementById('questionCategory').textContent = CATEGORIES[gameState.currentLesson].name;
+  document.getElementById('questionText').textContent = q.questionText;
+  document.getElementById('questionWord').textContent = q.word.en;
   
   const container = document.getElementById('optionsContainer');
-  if (container) {
-    container.innerHTML = '';
-    q.options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.textContent = opt;
-      btn.addEventListener('click', () => handleAnswer(btn, opt));
-      container.appendChild(btn);
-    });
-  }
+  container.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleAnswer(btn, opt));
+    container.appendChild(btn);
+  });
   
-  const feedback = document.getElementById('feedbackContainer');
-  const complete = document.getElementById('gameComplete');
-  const question = document.getElementById('questionContainer');
-  
-  if (feedback) feedback.style.display = 'none';
-  if (complete) complete.style.display = 'none';
-  if (question) question.style.display = 'flex';
+  document.getElementById('feedbackContainer').style.display = 'none';
+  document.getElementById('gameComplete').style.display = 'none';
+  document.getElementById('questionContainer').style.display = 'flex';
   
   gameState.isAnswered = false;
 }
@@ -441,72 +442,52 @@ function handleAnswer(btn, selected) {
     });
   }
   
-  const heartsEl = document.getElementById('hearts');
-  const xpEl = document.getElementById('xp');
-  const streakEl = document.getElementById('streak');
-  const levelEl = document.getElementById('level');
-  
-  if (heartsEl) heartsEl.textContent = gameState.hearts;
-  if (xpEl) xpEl.textContent = gameState.xp;
-  if (streakEl) streakEl.textContent = gameState.streak;
-  if (levelEl) levelEl.textContent = 'Level ' + gameState.level;
+  document.getElementById('hearts').textContent = gameState.hearts;
+  document.getElementById('xp').textContent = gameState.xp;
+  document.getElementById('streak').textContent = gameState.streak;
+  document.getElementById('level').textContent = 'Level ' + gameState.level;
   
   const feedback = document.getElementById('feedbackContainer');
-  if (feedback) {
-    feedback.style.display = 'block';
-    feedback.className = 'feedback-container ' + (isCorrect ? 'correct' : 'wrong');
-    document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '❌';
-    document.getElementById('feedbackText').textContent = isCorrect ? 'Correct! Well done!' : `Oops! The answer is "${q.correctAnswer}"`;
-  }
+  feedback.style.display = 'block';
+  feedback.className = 'feedback-container ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '❌';
+  document.getElementById('feedbackText').textContent = isCorrect ? 'Correct! Well done!' : `Oops! The answer is "${q.correctAnswer}"`;
   
   if (gameState.hearts <= 0) {
-    const nextBtn = document.getElementById('nextQuestionBtn');
-    if (nextBtn) {
-      nextBtn.textContent = 'Game Over 😢';
-      nextBtn.disabled = true;
-    }
+    document.getElementById('nextQuestionBtn').textContent = 'Game Over 😢';
+    document.getElementById('nextQuestionBtn').disabled = true;
     setTimeout(() => completeLesson(), 1500);
     return;
   }
   
   const nextBtn = document.getElementById('nextQuestionBtn');
-  if (nextBtn) {
-    if (gameState.currentQuestion >= gameState.totalQuestions - 1) {
-      nextBtn.textContent = 'Finish Lesson 🎉';
-    } else {
-      nextBtn.textContent = 'Continue →';
-    }
-    nextBtn.disabled = false;
-    nextBtn.onclick = () => {
-      if (gameState.currentQuestion >= gameState.totalQuestions - 1) {
-        completeLesson();
-      } else {
-        gameState.currentQuestion++;
-        renderQuestion();
-      }
-    };
+  if (gameState.currentQuestion >= gameState.totalQuestions - 1) {
+    nextBtn.textContent = 'Finish Lesson 🎉';
+  } else {
+    nextBtn.textContent = 'Continue →';
   }
+  nextBtn.disabled = false;
+  nextBtn.onclick = () => {
+    if (gameState.currentQuestion >= gameState.totalQuestions - 1) {
+      completeLesson();
+    } else {
+      gameState.currentQuestion++;
+      renderQuestion();
+    }
+  };
 }
 
 // ============================================================================
 // COMPLETE LESSON
 // ============================================================================
 function completeLesson() {
-  const question = document.getElementById('questionContainer');
-  const feedback = document.getElementById('feedbackContainer');
-  const complete = document.getElementById('gameComplete');
+  document.getElementById('questionContainer').style.display = 'none';
+  document.getElementById('feedbackContainer').style.display = 'none';
+  document.getElementById('gameComplete').style.display = 'block';
   
-  if (question) question.style.display = 'none';
-  if (feedback) feedback.style.display = 'none';
-  if (complete) complete.style.display = 'block';
-  
-  const correctEl = document.getElementById('completeCorrect');
-  const wrongEl = document.getElementById('completeWrong');
-  const xpEl = document.getElementById('completeXp');
-  
-  if (correctEl) correctEl.textContent = gameState.correct;
-  if (wrongEl) wrongEl.textContent = gameState.wrong;
-  if (xpEl) xpEl.textContent = gameState.correct * 10;
+  document.getElementById('completeCorrect').textContent = gameState.correct;
+  document.getElementById('completeWrong').textContent = gameState.wrong;
+  document.getElementById('completeXp').textContent = gameState.correct * 10;
   
   if (gameState.hearts > 0 && gameState.correct > gameState.wrong) {
     gameState.lessonsCompleted = Math.max(gameState.lessonsCompleted, gameState.currentLesson + 1);
@@ -514,13 +495,13 @@ function completeLesson() {
   
   saveProgress();
   
-  const continueBtn = document.getElementById('continueBtn');
-  if (continueBtn) {
-    continueBtn.onclick = () => {
-      document.getElementById('learn').style.display = 'none';
-      showDashboard();
-    };
-  }
+  document.getElementById('continueBtn').onclick = () => {
+    if (currentUser.username === 'admin') {
+      showAdminDashboard();
+    } else {
+      showUserDashboard();
+    }
+  };
 }
 
 // ============================================================================
@@ -559,9 +540,9 @@ async function saveProgress() {
 }
 
 // ============================================================================
-// LOAD DASHBOARD STATS
+// LOAD USER STATS
 // ============================================================================
-async function loadDashboardStats() {
+async function loadUserStats() {
   const token = localStorage.getItem('authToken');
   if (!token || !currentUser) return;
   
@@ -575,19 +556,71 @@ async function loadDashboardStats() {
       const data = await response.json();
       if (data.success) {
         const stats = data.stats || {};
-        const xpEl = document.getElementById('dashXp');
-        const lessonsEl = document.getElementById('dashLessons');
-        const streakEl = document.getElementById('dashStreak');
-        const levelEl = document.getElementById('dashLevel');
-        
-        if (xpEl) xpEl.textContent = stats.total_score || 0;
-        if (lessonsEl) lessonsEl.textContent = stats.games_played || 0;
-        if (streakEl) streakEl.textContent = 0;
-        if (levelEl) levelEl.textContent = 'Level ' + (Math.floor((stats.total_score || 0) / 100) + 1);
+        document.getElementById('dashXp').textContent = stats.total_score || 0;
+        document.getElementById('dashLessons').textContent = stats.games_played || 0;
+        document.getElementById('dashStreak').textContent = 0;
+        document.getElementById('dashLevel').textContent = 'Level ' + (Math.floor((stats.total_score || 0) / 100) + 1);
       }
     }
   } catch (error) {
     console.error('Error loading stats:', error);
+  }
+}
+
+// ============================================================================
+// LOAD ADMIN STATS
+// ============================================================================
+async function loadAdminStats() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
+  
+  try {
+    const response = await fetch(`${API_URL}/admin/users`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      const users = data.users || [];
+      
+      document.getElementById('adminTotalUsers').textContent = users.length;
+      document.getElementById('adminTotalWords').textContent = CATEGORIES.reduce((sum, cat) => sum + cat.words.length, 0);
+      
+      let totalScore = 0;
+      let totalGames = 0;
+      users.forEach(user => {
+        totalScore += user.total_score || 0;
+        totalGames += user.games_played || 0;
+      });
+      document.getElementById('adminTotalScore').textContent = totalScore;
+      document.getElementById('adminTotalGames').textContent = totalGames;
+      
+      const adminBody = document.getElementById('adminUsersBody');
+      adminBody.innerHTML = '';
+      
+      if (users.length === 0) {
+        adminBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px;">No users found</td></tr>';
+      } else {
+        users.forEach(user => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${user.id}</td>
+            <td><strong>${user.username}</strong></td>
+            <td>${user.email || '-'}</td>
+            <td>${user.total_score || 0}</td>
+            <td>${user.games_played || 0}</td>
+            <td>${user.best_score || 0}</td>
+            <td>${new Date(user.created_at).toLocaleDateString()}</td>
+          `;
+          adminBody.appendChild(tr);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Admin error:', error);
   }
 }
 
@@ -600,13 +633,22 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
   location.reload();
 });
 
+document.getElementById('adminLogoutBtn').addEventListener('click', function() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('currentUser');
+  location.reload();
+});
+
 // ============================================================================
 // EXIT GAME
 // ============================================================================
 document.getElementById('exitGameBtn').addEventListener('click', function() {
   if (confirm('Exit the lesson? Your progress will be saved.')) {
-    document.getElementById('learn').style.display = 'none';
-    showDashboard();
+    if (currentUser.username === 'admin') {
+      showAdminDashboard();
+    } else {
+      showUserDashboard();
+    }
   }
 });
 
@@ -650,9 +692,12 @@ document.getElementById('signinBtn').addEventListener('click', async function() 
       currentUser = data.user;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('navUser').style.display = 'block';
-      document.getElementById('navUsername').textContent = '👤 ' + currentUser.username;
-      document.getElementById('navUsername').style.color = 'var(--gold-bright)';
-      showDashboard();
+      
+      if (currentUser.username === 'admin') {
+        showAdminDashboard();
+      } else {
+        showUserDashboard();
+      }
     } else {
       alert('❌ ' + data.error);
     }
@@ -697,9 +742,12 @@ document.getElementById('modalRegisterBtn').addEventListener('click', async func
       currentUser = data.user;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('navUser').style.display = 'block';
-      document.getElementById('navUsername').textContent = '👤 ' + currentUser.username;
-      document.getElementById('navUsername').style.color = 'var(--gold-bright)';
-      showDashboard();
+      
+      if (currentUser.username === 'admin') {
+        showAdminDashboard();
+      } else {
+        showUserDashboard();
+      }
     } else {
       alert('❌ ' + data.error);
     }
@@ -757,4 +805,3 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log('🦉 Lingua - Language Learning System Ready!');
-console.log('🔗 API URL:', API_URL);
