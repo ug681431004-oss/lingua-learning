@@ -290,8 +290,142 @@ async function initDatabase() {
 initDatabase();
 
 // ============================================
-// ALL API ENDPOINTS GO HERE
+// VIEW DATA - Simple Data Viewer (Admin Only)
 // ============================================
+app.get('/admin/data', async (req, res) => {
+    try {
+        // Check if user is logged in as admin
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.send(`
+                <html>
+                <head><title>Admin Only</title></head>
+                <body style="font-family: Arial; text-align: center; padding: 50px;">
+                    <h1>🔒 Admin Only</h1>
+                    <p>Please login first.</p>
+                    <a href="/">Go to Home</a>
+                </body>
+                </html>
+            `);
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded.username !== 'admin') {
+            return res.send(`
+                <html>
+                <head><title>Access Denied</title></head>
+                <body style="font-family: Arial; text-align: center; padding: 50px;">
+                    <h1>⛔ Access Denied</h1>
+                    <p>Admin access required.</p>
+                    <a href="/">Go to Home</a>
+                </body>
+                </html>
+            `);
+        }
+
+        // Get data from database
+        const users = await pool.query('SELECT * FROM users ORDER BY id');
+        const stats = await pool.query('SELECT * FROM user_stats ORDER BY id');
+        const games = await pool.query('SELECT * FROM game_history ORDER BY id DESC LIMIT 20');
+
+        // Build HTML
+        let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>📊 Data Viewer - Admin</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+                h1 { color: #333; }
+                h2 { color: #555; margin-top: 30px; }
+                table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
+                td { padding: 10px; border-bottom: 1px solid #ddd; }
+                tr:hover { background: #f9f9f9; }
+                .container { max-width: 1200px; margin: 0 auto; }
+                .back-btn { display: inline-block; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px; }
+                .back-btn:hover { background: #555; }
+                .count { background: #e0e0e0; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>📊 Data Viewer</h1>
+                <a href="/" class="back-btn">🏠 Back to Home</a>
+                <a href="/admin/data?refresh=1" class="back-btn" style="background: #2196F3;">🔄 Refresh</a>
+                <hr>
+        `;
+
+        // Users Table
+        html += `<h2>👥 Users <span class="count">${users.rows.length}</span></h2>`;
+        html += `<table><tr><th>ID</th><th>Username</th><th>Email</th><th>Full Name</th><th>Created</th><th>Status</th></tr>`;
+        users.rows.forEach(user => {
+            html += `<tr>
+                <td>${user.id}</td>
+                <td><strong>${user.username}</strong></td>
+                <td>${user.email || '-'}</td>
+                <td>${user.full_name || '-'}</td>
+                <td>${new Date(user.created_at).toLocaleString()}</td>
+                <td>${user.status || 'active'}</td>
+            </tr>`;
+        });
+        html += `</table>`;
+
+        // Stats Table
+        html += `<h2>📈 User Stats <span class="count">${stats.rows.length}</span></h2>`;
+        html += `<table><tr><th>ID</th><th>User ID</th><th>Total Score</th><th>Games</th><th>Best Score</th><th>Wins</th><th>Sessions</th></tr>`;
+        stats.rows.forEach(stat => {
+            html += `<tr>
+                <td>${stat.id}</td>
+                <td>${stat.user_id}</td>
+                <td><strong>${stat.total_score}</strong></td>
+                <td>${stat.games_played}</td>
+                <td>${stat.best_score}</td>
+                <td>${stat.games_won}</td>
+                <td>${stat.sessions || 0}</td>
+            </tr>`;
+        });
+        html += `</table>`;
+
+        // Games History Table
+        html += `<h2>🎮 Recent Games <span class="count">${games.rows.length}</span></h2>`;
+        html += `<table><tr><th>ID</th><th>User ID</th><th>Mode</th><th>Score</th><th>Total</th><th>Category</th><th>Played At</th></tr>`;
+        games.rows.forEach(game => {
+            html += `<tr>
+                <td>${game.id}</td>
+                <td>${game.user_id}</td>
+                <td>${game.game_mode || '-'}</td>
+                <td><strong>${game.score}</strong></td>
+                <td>${game.total_questions}</td>
+                <td>${game.category || '-'}</td>
+                <td>${new Date(game.played_at).toLocaleString()}</td>
+            </tr>`;
+        });
+        html += `</table>`;
+
+        html += `
+                <hr>
+                <p style="color: #888; text-align: center;">Total Users: ${users.rows.length} | Total Stats: ${stats.rows.length} | Recent Games: ${games.rows.length}</p>
+            </div>
+        </body>
+        </html>
+        `;
+
+        res.send(html);
+
+    } catch (error) {
+        res.send(`
+            <html>
+            <head><title>Error</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px;">
+                <h1>❌ Error</h1>
+                <p>${error.message}</p>
+                <a href="/">Go to Home</a>
+            </body>
+            </html>
+        `);
+    }
+});
 
 // ============================================
 // TEST ENDPOINT
@@ -856,6 +990,7 @@ app.listen(PORT, () => {
     console.log(`📋 Admin: http://localhost:${PORT}/api/admin/users`);
     console.log(`📋 Profile: http://localhost:${PORT}/api/profile/:userId`);
     console.log(`📋 Game Stats: http://localhost:${PORT}/api/game-stats/:userId`);
+    console.log(`📊 Data Viewer: http://localhost:${PORT}/admin/data`);
 });
 
 console.log('✅ Server ready!');
