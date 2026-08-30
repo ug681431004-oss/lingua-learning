@@ -32,11 +32,54 @@ app.use(cors());
 app.use(express.json());
 
 // ============================================
-// CREATE TABLES IF NOT EXISTS
+// CREATE TABLES IN CORRECT ORDER
 // ============================================
 async function initDatabase() {
     try {
-        // Create course_setup table if not exists
+        // 1. Create USERS table FIRST (most important)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                email VARCHAR(100),
+                full_name VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                status VARCHAR(20) DEFAULT 'active'
+            );
+        `);
+        console.log('✅ Users table created');
+
+        // 2. Create USER_STATS table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS user_stats (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                total_score INTEGER DEFAULT 0,
+                games_played INTEGER DEFAULT 0,
+                best_score INTEGER DEFAULT 0,
+                games_won INTEGER DEFAULT 0,
+                sessions INTEGER DEFAULT 0,
+                last_played TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('✅ User stats table created');
+
+        // 3. Create ROLE table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS role (
+                role_id SERIAL PRIMARY KEY,
+                role_type VARCHAR(50) NOT NULL UNIQUE,
+                access_level INTEGER DEFAULT 1,
+                assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                role_status VARCHAR(20) DEFAULT 'active'
+            );
+        `);
+        console.log('✅ Role table created');
+
+        // 4. Create COURSE_SETUP table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS course_setup (
                 course_id SERIAL PRIMARY KEY,
@@ -49,15 +92,9 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        console.log('✅ Course setup table created');
 
-        // Insert default course if not exists
-        await pool.query(`
-            INSERT INTO course_setup (course_id, course_name, language) 
-            VALUES (1, 'General Vocabulary', 'Multilingual')
-            ON CONFLICT (course_id) DO NOTHING;
-        `);
-
-        // Create progress_data table if not exists
+        // 5. Create PROGRESS_DATA table (depends on users + course_setup)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS progress_data (
                 progress_id SERIAL PRIMARY KEY,
@@ -70,8 +107,9 @@ async function initDatabase() {
                 overall_progress DECIMAL(5,2) DEFAULT 0
             );
         `);
+        console.log('✅ Progress data table created');
 
-        // Create game_history table if not exists
+        // 6. Create GAME_HISTORY table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS game_history (
                 id SERIAL PRIMARY KEY,
@@ -83,8 +121,9 @@ async function initDatabase() {
                 played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        console.log('✅ Game history table created');
 
-        // Create category_scores table if not exists
+        // 7. Create CATEGORY_SCORES table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS category_scores (
                 id SERIAL PRIMARY KEY,
@@ -96,8 +135,133 @@ async function initDatabase() {
                 UNIQUE(user_id, category)
             );
         `);
+        console.log('✅ Category scores table created');
 
-        console.log('✅ Database tables verified');
+        // 8. Create USAGE_DATA table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS usage_data (
+                usage_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                total_logins INTEGER DEFAULT 0,
+                lessons_opened INTEGER DEFAULT 0,
+                activities_completed INTEGER DEFAULT 0,
+                time_online INTEGER DEFAULT 0,
+                last_login_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('✅ Usage data table created');
+
+        // 9. Create LOGIN_DATA table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS login_data (
+                login_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                username VARCHAR(50) NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                session_token VARCHAR(255),
+                login_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                login_status VARCHAR(20) DEFAULT 'success'
+            );
+        `);
+        console.log('✅ Login data table created');
+
+        // 10. Create ATTENDANCE table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS attendance (
+                attendance_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                course_id INTEGER REFERENCES course_setup(course_id) ON DELETE CASCADE,
+                session_date DATE DEFAULT CURRENT_DATE,
+                status VARCHAR(20) DEFAULT 'present',
+                total_sessions INTEGER DEFAULT 0,
+                attendance_rate DECIMAL(5,2) DEFAULT 0.00,
+                UNIQUE(user_id, course_id, session_date)
+            );
+        `);
+        console.log('✅ Attendance table created');
+
+        // 11. Create FEEDBACK table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS feedback (
+                feedback_id SERIAL PRIMARY KEY,
+                teacher_id INTEGER REFERENCES users(id),
+                student_id INTEGER REFERENCES users(id),
+                course_id INTEGER REFERENCES course_setup(course_id),
+                comments TEXT,
+                rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+                feedback_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('✅ Feedback table created');
+
+        // 12. Create LEARN_CONTENT table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS learn_content (
+                content_id SERIAL PRIMARY KEY,
+                course_id INTEGER REFERENCES course_setup(course_id) ON DELETE CASCADE,
+                teacher_id INTEGER REFERENCES users(id),
+                content_title VARCHAR(200) NOT NULL,
+                content_type VARCHAR(50) NOT NULL,
+                difficulty_level VARCHAR(20) DEFAULT 'beginner',
+                upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('✅ Learn content table created');
+
+        // 13. Create LEARN_REQUEST table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS learn_request (
+                request_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                course_id INTEGER REFERENCES course_setup(course_id) ON DELETE CASCADE,
+                language_req VARCHAR(50) NOT NULL,
+                lesson_topic VARCHAR(200) NOT NULL,
+                request_date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                request_status VARCHAR(20) DEFAULT 'pending'
+            );
+        `);
+        console.log('✅ Learn request table created');
+
+        // ============================================
+        // INSERT DEFAULT DATA
+        // ============================================
+
+        // Insert roles
+        await pool.query(`
+            INSERT INTO role (role_type, access_level) VALUES 
+                ('admin', 3),
+                ('teacher', 2),
+                ('student', 1)
+            ON CONFLICT (role_type) DO NOTHING;
+        `);
+        console.log('✅ Roles inserted');
+
+        // Insert default course
+        await pool.query(`
+            INSERT INTO course_setup (course_id, course_name, language, schedule) 
+            VALUES (1, 'General Vocabulary', 'Multilingual', 'Self-paced')
+            ON CONFLICT (course_id) DO NOTHING;
+        `);
+        console.log('✅ Default course inserted');
+
+        // Insert admin user (password: admin123)
+        await pool.query(`
+            INSERT INTO users (username, password_hash, email, full_name, status) 
+            VALUES ('admin', '$2a$10$CpFPl8mza/G9RP6.t6w7Fe92IHgojczAhAlNfpzHjGevMUdWZruYa', 'admin@system.com', 'System Admin', 'active')
+            ON CONFLICT (username) DO NOTHING;
+        `);
+        console.log('✅ Admin user inserted');
+
+        // Insert admin stats
+        await pool.query(`
+            INSERT INTO user_stats (user_id) 
+            SELECT id FROM users WHERE username = 'admin'
+            ON CONFLICT (user_id) DO NOTHING;
+        `);
+        console.log('✅ Admin stats inserted');
+
+        console.log('✅ All tables and default data created successfully!');
+
     } catch (error) {
         console.error('❌ Database init error:', error);
     }
@@ -182,7 +346,7 @@ app.post('/api/register', async (req, res) => {
         
         const newUser = result.rows[0];
         
-        // Insert into user_stats with default values for game
+        // Insert into user_stats
         await pool.query(
             `INSERT INTO user_stats (user_id, total_score, games_played, best_score, games_won, sessions) 
              VALUES ($1, 0, 0, 0, 0, 0)`,
@@ -489,17 +653,14 @@ app.post('/api/save-progress', async (req, res) => {
             });
         }
         
-        // Use course_id = 1 (default course)
         const validCourseId = 1;
         
-        // Check if progress exists
         const checkResult = await pool.query(
             'SELECT progress_id, lessons_completed FROM progress_data WHERE user_id = $1 AND course_id = $2',
             [userId, validCourseId]
         );
         
         if (checkResult.rows.length > 0) {
-            // Update existing progress
             const current = checkResult.rows[0];
             const newLessons = current.lessons_completed + (lessonsCompleted || 0);
             
@@ -516,7 +677,6 @@ app.post('/api/save-progress', async (req, res) => {
             
             console.log('✅ Progress updated for user:', userId);
             
-            // Also update user_stats
             await pool.query(
                 `UPDATE user_stats 
                  SET total_score = total_score + $2,
@@ -534,7 +694,6 @@ app.post('/api/save-progress', async (req, res) => {
                 progress: result.rows[0]
             });
         } else {
-            // Create new progress
             const result = await pool.query(
                 `INSERT INTO progress_data (user_id, course_id, lessons_completed, quiz_score, time_spent, overall_progress) 
                  VALUES ($1, $2, $3, $4, $5, $6)
@@ -544,7 +703,6 @@ app.post('/api/save-progress', async (req, res) => {
             
             console.log('✅ New progress created for user:', userId);
             
-            // Also update user_stats
             await pool.query(
                 `UPDATE user_stats 
                  SET total_score = total_score + $2,
@@ -574,7 +732,7 @@ app.post('/api/save-progress', async (req, res) => {
 });
 
 // ============================================
-// SAVE GAME STATS (Duolingo-style)
+// SAVE GAME STATS
 // ============================================
 app.post('/api/save-game-stats', async (req, res) => {
     const { userId, xp, level, streak, lessonsCompleted, hearts } = req.body;
@@ -589,7 +747,6 @@ app.post('/api/save-game-stats', async (req, res) => {
     }
     
     try {
-        // Check if user exists
         const userCheck = await pool.query(
             'SELECT id FROM users WHERE id = $1',
             [userId]
@@ -602,7 +759,6 @@ app.post('/api/save-game-stats', async (req, res) => {
             });
         }
         
-        // Update user_stats with game progress
         const result = await pool.query(
             `UPDATE user_stats 
              SET total_score = $1,
