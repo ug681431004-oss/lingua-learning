@@ -1,4 +1,13 @@
 // ============================================================================
+// API URL - Auto-detect for localhost or Render
+// ============================================================================
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : `${window.location.origin}/api`;
+
+console.log('🔗 API URL:', API_URL);
+
+// ============================================================================
 // VOCABULARY DATABASE
 // ============================================================================
 const CATEGORIES = [
@@ -235,11 +244,6 @@ if (dictSearch) {
 }
 
 buildDictionary();
-
-// ============================================================================
-// API URL
-// ============================================================================
-const API_URL = 'http://localhost:5000/api';
 
 // ============================================================================
 // SHOW DASHBOARD
@@ -753,3 +757,4 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log('🦉 Lingua - Language Learning System Ready!');
+console.log('🔗 API URL:', API_URL);
