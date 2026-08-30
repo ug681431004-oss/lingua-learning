@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,7 +33,17 @@ app.use(cors());
 app.use(express.json());
 
 // ============================================
-// CREATE TABLES IN CORRECT ORDER - FIXED
+// SERVE STATIC FILES (HTML, CSS, JS)
+// ============================================
+app.use(express.static(__dirname));
+
+// Serve index.html for root route
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+// ============================================
+// CREATE TABLES IN CORRECT ORDER
 // ============================================
 async function initDatabase() {
     try {
@@ -225,10 +236,9 @@ async function initDatabase() {
         console.log('✅ Learn request table created');
 
         // ============================================
-        // INSERT DEFAULT DATA (Check first)
+        // INSERT DEFAULT DATA
         // ============================================
 
-        // Insert roles
         const roleCheck = await pool.query('SELECT * FROM role WHERE role_type = $1', ['admin']);
         if (roleCheck.rows.length === 0) {
             await pool.query(`
@@ -240,7 +250,6 @@ async function initDatabase() {
             console.log('✅ Roles inserted');
         }
 
-        // Insert default course
         const courseCheck = await pool.query('SELECT * FROM course_setup WHERE course_id = 1');
         if (courseCheck.rows.length === 0) {
             await pool.query(`
@@ -250,7 +259,6 @@ async function initDatabase() {
             console.log('✅ Default course inserted');
         }
 
-        // Insert admin user (password: admin123)
         const adminCheck = await pool.query('SELECT * FROM users WHERE username = $1', ['admin']);
         if (adminCheck.rows.length === 0) {
             await pool.query(`
@@ -260,7 +268,6 @@ async function initDatabase() {
             console.log('✅ Admin user inserted');
         }
 
-        // Insert admin stats
         const statsCheck = await pool.query(`
             SELECT * FROM user_stats WHERE user_id = (SELECT id FROM users WHERE username = 'admin')
         `);
@@ -281,6 +288,10 @@ async function initDatabase() {
 
 // Run database initialization
 initDatabase();
+
+// ============================================
+// ALL API ENDPOINTS GO HERE
+// ============================================
 
 // ============================================
 // TEST ENDPOINT
@@ -330,7 +341,6 @@ app.post('/api/register', async (req, res) => {
     }
     
     try {
-        // Check if user exists
         const userCheck = await pool.query(
             'SELECT id FROM users WHERE username = $1',
             [username]
@@ -348,7 +358,6 @@ app.post('/api/register', async (req, res) => {
         
         await pool.query('BEGIN');
         
-        // Insert user
         const result = await pool.query(
             `INSERT INTO users (username, password_hash, email, full_name, created_at, status) 
              VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, 'active') 
@@ -358,7 +367,6 @@ app.post('/api/register', async (req, res) => {
         
         const newUser = result.rows[0];
         
-        // Insert into user_stats
         await pool.query(
             `INSERT INTO user_stats (user_id, total_score, games_played, best_score, games_won, sessions) 
              VALUES ($1, 0, 0, 0, 0, 0)`,
@@ -440,13 +448,11 @@ app.post('/api/login', async (req, res) => {
             });
         }
         
-        // Update last_login
         await pool.query(
             `UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1`,
             [user.id]
         );
         
-        // Update session count
         await pool.query(
             `UPDATE user_stats SET sessions = sessions + 1 WHERE user_id = $1`,
             [user.id]
@@ -568,7 +574,7 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 // ============================================
-// GET USER PROFILE (for stats)
+// GET USER PROFILE
 // ============================================
 app.get('/api/profile/:userId', async (req, res) => {
     const userId = parseInt(req.params.userId);
@@ -581,7 +587,6 @@ app.get('/api/profile/:userId', async (req, res) => {
     }
     
     try {
-        // Get user info
         const userResult = await pool.query(
             `SELECT id, username, email, full_name, created_at, last_login, status
              FROM users WHERE id = $1`,
@@ -595,7 +600,6 @@ app.get('/api/profile/:userId', async (req, res) => {
             });
         }
         
-        // Get stats
         const statsResult = await pool.query(
             `SELECT total_score, games_played, best_score, games_won, 
                     sessions, last_played 
@@ -603,7 +607,6 @@ app.get('/api/profile/:userId', async (req, res) => {
             [userId]
         );
         
-        // Get recent games
         const historyResult = await pool.query(
             `SELECT game_mode, score, total_questions, category, played_at 
              FROM game_history 
@@ -652,7 +655,6 @@ app.post('/api/save-progress', async (req, res) => {
     }
     
     try {
-        // Check if user exists
         const userCheck = await pool.query(
             'SELECT id FROM users WHERE id = $1',
             [userId]
