@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦉 Lingua - Language Learning</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Arabic:wght@500;700&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- LOGIN MODAL -->
+<!-- ============================================================ -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal-container">
+    <div id="signinForm" class="modal-content">
+      <div class="modal-header">
+        <div class="modal-icon">🦉</div>
+        <h2>Welcome Back</h2>
+        <h1>Sign In</h1>
+        <p class="modal-subtitle">Continue your language journey</p>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-input-group">
+          <label>👤 Username</label>
+          <input type="text" id="signinUsername" placeholder="Enter your username" />
+        </div>
+        
+        <div class="modal-input-group">
+          <label>🔑 Password</label>
+          <input type="password" id="signinPassword" placeholder="Enter your password" />
+        </div>
+        
+        <div class="modal-actions">
+          <button id="signinBtn" class="modal-btn primary">🔐 Sign In</button>
+        </div>
+        
+        <div class="modal-divider">
+          <span>or</span>
+        </div>
+        
+        <button id="switchToRegister" class="modal-btn secondary">📝 Create New Account</button>
+        <button id="modalSkipBtn" class="modal-btn skip">⏭️ Skip for Now</button>
+      </div>
+      
+      <div class="modal-footer">
+        <span>🔒 Your data is safe &amp; private</span>
+      </div>
+    </div>
+    
+    <div id="registerForm" class="modal-content" style="display:none;">
+      <div class="modal-header">
+        <div class="modal-icon">🦉</div>
+        <h2>Join Us</h2>
+        <h1>Create Account</h1>
+        <p class="modal-subtitle">Start your language learning journey</p>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-input-group">
+          <label>👤 Username</label>
+          <input type="text" id="modalUsername" placeholder="Choose a username" />
+        </div>
+        
+        <div class="modal-input-group">
+          <label>🔑 Password</label>
+          <input type="password" id="modalPassword" placeholder="Min 6 characters" />
+        </div>
+        
+        <div class="modal-input-group">
+          <label>📧 Email <span style="color:var(--text-secondary);font-weight:400;font-size:12px;">(optional)</span></label>
+          <input type="email" id="modalEmail" placeholder="your@email.com" />
+        </div>
+        
+        <div class="modal-actions">
+          <button id="modalRegisterBtn" class="modal-btn primary">🚀 Create Account</button>
+        </div>
+        
+        <div class="modal-divider">
+          <span>or</span>
+        </div>
+        
+        <button id="switchToSignin" class="modal-btn secondary">🔐 Back to Sign In</button>
+        <button id="modalSkipBtn2" class="modal-btn skip">⏭️ Skip for Now</button>
+      </div>
+      
+      <div class="modal-footer">
+        <span>🔒 Your data is safe &amp; private</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FIXED BUTTONS -->
+<!-- ============================================================ -->
+<div style="position:fixed;top:15px;right:20px;z-index:9999;display:flex;align-items:center;gap:10px;">
+  <button id="guestRegisterBtn" style="display:none;background:linear-gradient(135deg,#c99a3d,#e8b955);border:none;border-radius:50px;padding:10px 20px;color:#12181f;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;box-shadow:0 4px 15px rgba(201,154,61,0.3);transition:all 0.3s ease;">
+    📝 Register
+  </button>
+  <button id="themeToggle" style="background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:50px;padding:10px 20px;color:#fff;cursor:pointer;font-size:14px;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:all 0.3s ease;">
+    <span id="themeIcon">🌙</span>
+    <span id="themeText" style="font-size:12px;text-transform:uppercase;font-weight:600;letter-spacing:0.05em;">Dark</span>
+  </button>
+</div>
+
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<header class="topnav" id="topnav">
+  <div class="wrap">
+    <div class="nav-brand">🦉 Lingua</div>
+    <nav>
+      <a href="#" id="navDashboard">📊 Dashboard</a>
+      <a href="#" id="navLearn">📚 Learn</a>
+      <a href="#" id="navDictionary">📖 Dictionary</a>
+    </nav>
+    <div id="navUser" style="display:none;color:var(--text-light);font-family:var(--mono);font-size:12px;">
+      👤 <span id="navUsername"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- HERO SECTION (for guests) -->
+<!-- ============================================================ -->
+<section class="hero" id="heroSection">
+  <div class="wrap inner">
+    <header>
+      <p class="eyebrow">Language learning · Database-driven</p>
+      <h1>Multilingual Language<br>Improvement System</h1>
+      <p class="lede">
+        A vocabulary system built across four languages at once. Every word carries
+        its translation in all four — so matching one pulls you straight into the others.
+      </p>
+      <ul class="lang-row">
+        <li class="lang-chip">English</li>
+        <li class="lang-chip">العربية</li>
+        <li class="lang-chip">ไทย</li>
+        <li class="lang-chip">Bahasa Melayu</li>
+      </ul>
+    </header>
+
+    <figure class="orbit-wrap" aria-hidden="true">
+      <span class="orbit-ring"></span>
+      <span class="orbit-ring r2"></span>
+      <figcaption class="orbit-core">4×<span>LANGUAGES<br>ONE&nbsp;SYSTEM</span></figcaption>
+      <span class="glyph g1"><em>A</em></span>
+      <span class="glyph g2 lang-ar"><em>ا</em></span>
+      <span class="glyph g3 lang-th"><em>ก</em></span>
+      <span class="glyph g4"><em>M</em></span>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- GAME / LEARNING SECTION -->
+<!-- ============================================================ -->
+<section id="learn" style="padding: 30px 0 10px; display:none;">
+  <div class="wrap">
+    <div class="game-container">
+      
+      <!-- Game Header -->
+      <div class="game-header">
+        <div class="game-stats">
+          <div class="stat">
+            <span class="stat-icon">❤️</span>
+            <span class="stat-value" id="hearts">5</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-value" id="xp">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-value" id="streak">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">📊</span>
+            <span class="stat-value" id="level">Level 1</span>
+          </div>
+        </div>
+        <button id="exitGameBtn" class="exit-btn">✕ Exit</button>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="lessonProgress" style="width: 0%;"></div>
+      </div>
+      
+      <!-- Question Container -->
+      <div class="question-container" id="questionContainer">
+        <div class="question-header">
+          <span class="question-number" id="questionNumber">1 / 10</span>
+          <span class="question-category" id="questionCategory">Greetings</span>
+        </div>
+        
+        <div class="question-content">
+          <p class="question-text" id="questionText">What is the translation of "Hello"?</p>
+          <div class="question-word" id="questionWord">Hello</div>
+        </div>
+        
+        <div class="options-container" id="optionsContainer">
+          <!-- Options will be dynamically inserted -->
+        </div>
+        
+        <div class="feedback-container" id="feedbackContainer" style="display:none;">
+          <div class="feedback-icon" id="feedbackIcon">✅</div>
+          <p class="feedback-text" id="feedbackText">Correct!</p>
+          <button class="next-btn" id="nextQuestionBtn">Continue →</button>
+        </div>
+      </div>
+      
+      <!-- Game Complete -->
+      <div class="game-complete" id="gameComplete" style="display:none;">
+        <div class="complete-icon">🎉</div>
+        <h2>Lesson Complete!</h2>
+        <p>You've finished this lesson. Great job!</p>
+        <div class="complete-stats">
+          <div class="complete-stat">
+            <span class="stat-number" id="completeCorrect">0</span>
+            <span class="stat-label">Correct</span>
+          </div>
+          <div class="complete-stat">
+            <span class="stat-number" id="completeWrong">0</span>
+            <span class="stat-label">Wrong</span>
+          </div>
+          <div class="complete-stat">
+            <span class="stat-number" id="completeXp">0</span>
+            <span class="stat-label">XP Earned</span>
+          </div>
+        </div>
+        <button class="cta" id="continueBtn">Continue Learning →</button>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD SECTION -->
+<!-- ============================================================ -->
+<section id="dashboard" style="padding: 30px 0 10px; display:none;">
+  <div class="wrap">
+    <div class="dashboard-container">
+      
+      <!-- User Stats -->
+      <div class="dashboard-header">
+        <div>
+          <h2 style="font-family:var(--display); margin:0;">📊 Dashboard</h2>
+          <p style="color:var(--text-secondary); margin:4px 0 0;">Welcome back, <strong id="dashUsername">User</strong>!</p>
+        </div>
+        <button id="logoutBtn" style="padding:8px 18px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-card); cursor:pointer; font-family:var(--body); font-size:12px; color:var(--th);">🚪 Logout</button>
+      </div>
+      
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon">⭐</div>
+          <div class="stat-card-number" id="dashXp">0</div>
+          <div class="stat-card-label">Total XP</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">📚</div>
+          <div class="stat-card-number" id="dashLessons">0</div>
+          <div class="stat-card-label">Lessons Done</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🔥</div>
+          <div class="stat-card-number" id="dashStreak">0</div>
+          <div class="stat-card-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🏆</div>
+          <div class="stat-card-number" id="dashLevel">Level 1</div>
+          <div class="stat-card-label">Current Level</div>
+        </div>
+      </div>
+      
+      <!-- Available Lessons -->
+      <h3 style="font-family:var(--display); margin:24px 0 12px;">📚 Available Lessons</h3>
+      <div class="lessons-grid" id="lessonsGrid">
+        <!-- Lessons will be dynamically inserted -->
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DICTIONARY SECTION -->
+<!-- ============================================================ -->
+<section id="dictionary" style="padding: 30px 0 10px;">
+  <div class="wrap">
+    <h2 style="font-family:var(--display);">📖 Dictionary</h2>
+    <p class="sub">Search and browse all vocabulary words</p>
+    
+    <div class="panel" style="padding:20px 24px;">
+      <input type="text" id="dictSearch" placeholder="Search a word in any language…" style="width:100%;padding:12px 14px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-input);color:var(--text-primary);font-size:15px;" />
+    </div>
+    
+    <div class="dict-table-wrap">
+      <table class="dict-table" id="dictTable">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>English</th>
+            <th dir="rtl">العربية</th>
+            <th>ไทย</th>
+            <th>Bahasa Melayu</th>
+          </tr>
+        </thead>
+        <tbody id="dictBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">🦉 Lingua - Language Learning System</div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
