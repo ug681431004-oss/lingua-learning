@@ -719,9 +719,12 @@ h1 {
 }
 
 /* ============================================================================
-   DASHBOARD
+   USER DASHBOARD
    ========================================================================== */
-.dashboard-container { max-width: 800px; margin: 0 auto; }
+.dashboard-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
 
 .dashboard-header {
   display: flex;
@@ -796,6 +799,153 @@ h1 {
 .lesson-card .lesson-status.active { color: var(--gold); }
 
 /* ============================================================================
+   ADMIN DASHBOARD
+   ========================================================================== */
+#adminDashboard .dashboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+#adminDashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+#adminDashboard .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+#adminDashboard .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#adminDashboard .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px var(--shadow);
+}
+
+#adminDashboard .stat-card-icon {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+#adminDashboard .stat-card-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--display);
+}
+
+#adminDashboard .stat-card-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+    text-transform: uppercase;
+}
+
+/* Admin Users Table */
+#adminUsersTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#adminUsersTable th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--border-color);
+    background: var(--bg-body);
+}
+
+#adminUsersTable td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    color: var(--text-primary);
+}
+
+#adminUsersTable tr:hover td {
+    background: var(--bg-body);
+}
+
+/* Admin Data Viewer Link */
+.admin-data-link {
+    display: inline-block;
+    padding: 10px 24px;
+    background: var(--gold);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.admin-data-link:hover {
+    background: var(--gold-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .admin-data-link {
+    background: #5a189a;
+    color: #e0aaff;
+}
+
+[data-theme="dark"] .admin-data-link:hover {
+    background: #7b2cbf;
+    color: #ffffff;
+}
+
+/* Dark Mode Admin */
+[data-theme="dark"] #adminDashboard .stat-card,
+[data-theme="dark"] #userDashboard .stat-card {
+    background: #1a1a3e;
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] #adminDashboard .stat-card-number,
+[data-theme="dark"] #userDashboard .stat-card-number {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] #adminUsersTable th {
+    background: #1a1a3e;
+    color: #a0a0b0;
+}
+
+[data-theme="dark"] #adminUsersTable td {
+    border-color: rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] #adminUsersTable tr:hover td {
+    background: #1a1a3e;
+}
+
+/* ============================================================================
    DICTIONARY
    ========================================================================== */
 .dict-table-wrap {
@@ -868,4 +1018,21 @@ h1 {
 @media (max-width: 400px) {
   .stats-grid { grid-template-columns: 1fr; }
   .lessons-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+    #adminDashboard .stats-grid,
+    #userDashboard .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    #adminDashboard .stat-card-number,
+    #userDashboard .stat-card-number {
+        font-size: 22px;
+    }
+    
+    #adminDashboard .stat-card-icon,
+    #userDashboard .stat-card-icon {
+        font-size: 22px;
+    }
 }
