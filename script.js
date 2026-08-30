@@ -132,7 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('navUsername').textContent = '👤 ' + currentUser.username;
     document.getElementById('navUsername').style.color = 'var(--gold-bright)';
     
-    // Redirect based on user role
     if (currentUser.username === 'admin') {
       showAdminDashboard();
     } else {
@@ -623,6 +622,20 @@ async function loadAdminStats() {
     console.error('Admin error:', error);
   }
 }
+
+// ============================================================================
+// VIEW DATA BUTTON - Opens admin data page with token
+// ============================================================================
+document.getElementById('viewDataBtn').addEventListener('click', function() {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        alert('Please login as admin');
+        return;
+    }
+    
+    // Open the data page with token in URL
+    window.open(`/admin/data?token=${encodeURIComponent(token)}`, '_blank');
+});
 
 // ============================================================================
 // LOGOUT
