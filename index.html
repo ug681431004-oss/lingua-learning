@@ -160,106 +160,20 @@
 </section>
 
 <!-- ============================================================ -->
-<!-- GAME / LEARNING SECTION -->
+<!-- USER DASHBOARD (Regular Users) -->
 <!-- ============================================================ -->
-<section id="learn" style="padding: 30px 0 10px; display:none;">
-  <div class="wrap">
-    <div class="game-container">
-      
-      <!-- Game Header -->
-      <div class="game-header">
-        <div class="game-stats">
-          <div class="stat">
-            <span class="stat-icon">❤️</span>
-            <span class="stat-value" id="hearts">5</span>
-          </div>
-          <div class="stat">
-            <span class="stat-icon">⭐</span>
-            <span class="stat-value" id="xp">0</span>
-          </div>
-          <div class="stat">
-            <span class="stat-icon">🔥</span>
-            <span class="stat-value" id="streak">0</span>
-          </div>
-          <div class="stat">
-            <span class="stat-icon">📊</span>
-            <span class="stat-value" id="level">Level 1</span>
-          </div>
-        </div>
-        <button id="exitGameBtn" class="exit-btn">✕ Exit</button>
-      </div>
-      
-      <!-- Progress Bar -->
-      <div class="progress-bar-container">
-        <div class="progress-bar" id="lessonProgress" style="width: 0%;"></div>
-      </div>
-      
-      <!-- Question Container -->
-      <div class="question-container" id="questionContainer">
-        <div class="question-header">
-          <span class="question-number" id="questionNumber">1 / 10</span>
-          <span class="question-category" id="questionCategory">Greetings</span>
-        </div>
-        
-        <div class="question-content">
-          <p class="question-text" id="questionText">What is the translation of "Hello"?</p>
-          <div class="question-word" id="questionWord">Hello</div>
-        </div>
-        
-        <div class="options-container" id="optionsContainer">
-          <!-- Options will be dynamically inserted -->
-        </div>
-        
-        <div class="feedback-container" id="feedbackContainer" style="display:none;">
-          <div class="feedback-icon" id="feedbackIcon">✅</div>
-          <p class="feedback-text" id="feedbackText">Correct!</p>
-          <button class="next-btn" id="nextQuestionBtn">Continue →</button>
-        </div>
-      </div>
-      
-      <!-- Game Complete -->
-      <div class="game-complete" id="gameComplete" style="display:none;">
-        <div class="complete-icon">🎉</div>
-        <h2>Lesson Complete!</h2>
-        <p>You've finished this lesson. Great job!</p>
-        <div class="complete-stats">
-          <div class="complete-stat">
-            <span class="stat-number" id="completeCorrect">0</span>
-            <span class="stat-label">Correct</span>
-          </div>
-          <div class="complete-stat">
-            <span class="stat-number" id="completeWrong">0</span>
-            <span class="stat-label">Wrong</span>
-          </div>
-          <div class="complete-stat">
-            <span class="stat-number" id="completeXp">0</span>
-            <span class="stat-label">XP Earned</span>
-          </div>
-        </div>
-        <button class="cta" id="continueBtn">Continue Learning →</button>
-      </div>
-      
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- DASHBOARD SECTION -->
-<!-- ============================================================ -->
-<section id="dashboard" style="padding: 30px 0 10px; display:none;">
+<section id="userDashboard" style="padding: 30px 0 10px; display:none;">
   <div class="wrap">
     <div class="dashboard-container">
       
-      <!-- User Stats -->
       <div class="dashboard-header">
         <div>
-          <h2 style="font-family:var(--display); margin:0;">📊 Dashboard</h2>
+          <h2 style="font-family:var(--display); margin:0;">📊 My Dashboard</h2>
           <p style="color:var(--text-secondary); margin:4px 0 0;">Welcome back, <strong id="dashUsername">User</strong>!</p>
         </div>
         <button id="logoutBtn" style="padding:8px 18px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-card); cursor:pointer; font-family:var(--body); font-size:12px; color:var(--th);">🚪 Logout</button>
       </div>
       
-      <!-- Stats Cards -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-card-icon">⭐</div>
@@ -283,10 +197,154 @@
         </div>
       </div>
       
-      <!-- Available Lessons -->
       <h3 style="font-family:var(--display); margin:24px 0 12px;">📚 Available Lessons</h3>
-      <div class="lessons-grid" id="lessonsGrid">
-        <!-- Lessons will be dynamically inserted -->
+      <div class="lessons-grid" id="lessonsGrid"></div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ADMIN DASHBOARD (Admin Only) -->
+<!-- ============================================================ -->
+<section id="adminDashboard" style="padding: 30px 0 10px; display:none;">
+  <div class="wrap">
+    <div class="dashboard-container">
+      
+      <div class="dashboard-header">
+        <div>
+          <h2 style="font-family:var(--display); margin:0;">🔐 Admin Dashboard</h2>
+          <p style="color:var(--text-secondary); margin:4px 0 0;">Welcome, <strong id="adminName">Admin</strong>!</p>
+        </div>
+        <button id="adminLogoutBtn" style="padding:8px 18px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-card); cursor:pointer; font-family:var(--body); font-size:12px; color:var(--th);">🚪 Logout</button>
+      </div>
+      
+      <!-- Admin Stats -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-card-icon">👥</div>
+          <div class="stat-card-number" id="adminTotalUsers">0</div>
+          <div class="stat-card-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">📚</div>
+          <div class="stat-card-number" id="adminTotalWords">0</div>
+          <div class="stat-card-label">Total Words</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🏆</div>
+          <div class="stat-card-number" id="adminTotalScore">0</div>
+          <div class="stat-card-label">Total Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon">🎮</div>
+          <div class="stat-card-number" id="adminTotalGames">0</div>
+          <div class="stat-card-label">Games Played</div>
+        </div>
+      </div>
+      
+      <!-- All Users Table -->
+      <h3 style="font-family:var(--display); margin:0 0 12px;">👥 All Users</h3>
+      <div style="overflow-x:auto;">
+        <table class="dict-table" id="adminUsersTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Total Score</th>
+              <th>Games</th>
+              <th>Best Score</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody id="adminUsersBody">
+            <tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px;">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- View Data Button -->
+      <div style="margin-top:20px;">
+        <a href="/admin/data" target="_blank" class="cta" style="padding:10px 24px; font-size:13px; text-decoration:none; display:inline-block;">📊 View All Data</a>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- GAME / LEARNING SECTION -->
+<!-- ============================================================ -->
+<section id="learn" style="padding: 30px 0 10px; display:none;">
+  <div class="wrap">
+    <div class="game-container">
+      
+      <div class="game-header">
+        <div class="game-stats">
+          <div class="stat">
+            <span class="stat-icon">❤️</span>
+            <span class="stat-value" id="hearts">5</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-value" id="xp">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-value" id="streak">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">📊</span>
+            <span class="stat-value" id="level">Level 1</span>
+          </div>
+        </div>
+        <button id="exitGameBtn" class="exit-btn">✕ Exit</button>
+      </div>
+      
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="lessonProgress" style="width: 0%;"></div>
+      </div>
+      
+      <div class="question-container" id="questionContainer">
+        <div class="question-header">
+          <span class="question-number" id="questionNumber">1 / 10</span>
+          <span class="question-category" id="questionCategory">Greetings</span>
+        </div>
+        
+        <div class="question-content">
+          <p class="question-text" id="questionText">What is the translation of "Hello"?</p>
+          <div class="question-word" id="questionWord">Hello</div>
+        </div>
+        
+        <div class="options-container" id="optionsContainer"></div>
+        
+        <div class="feedback-container" id="feedbackContainer" style="display:none;">
+          <div class="feedback-icon" id="feedbackIcon">✅</div>
+          <p class="feedback-text" id="feedbackText">Correct!</p>
+          <button class="next-btn" id="nextQuestionBtn">Continue →</button>
+        </div>
+      </div>
+      
+      <div class="game-complete" id="gameComplete" style="display:none;">
+        <div class="complete-icon">🎉</div>
+        <h2>Lesson Complete!</h2>
+        <p>You've finished this lesson. Great job!</p>
+        <div class="complete-stats">
+          <div class="complete-stat">
+            <span class="stat-number" id="completeCorrect">0</span>
+            <span class="stat-label">Correct</span>
+          </div>
+          <div class="complete-stat">
+            <span class="stat-number" id="completeWrong">0</span>
+            <span class="stat-label">Wrong</span>
+          </div>
+          <div class="complete-stat">
+            <span class="stat-number" id="completeXp">0</span>
+            <span class="stat-label">XP Earned</span>
+          </div>
+        </div>
+        <button class="cta" id="continueBtn">Continue Learning →</button>
       </div>
       
     </div>
